@@ -26,6 +26,21 @@ private:
     int length;
 };
 
+class SpotMatrix;
+
+class stringmatch
+{
+public:
+    stringmatch();
+    ~stringmatch();
+    void FindMatchedString(string,SpotMatrix&);
+    void ShowResult();
+private:
+    bool flag;
+    vector<string> result;
+    
+};
+
 class Spot
 {
 public:
@@ -40,6 +55,7 @@ public:
     virtual void AddComment(string comment) {}
     virtual void DeleteComment(int) {}
     virtual void ShowInfo() {}
+    virtual void SetLoc(string)   {}
     virtual string ReturnInfo() {return Ori_name;}
 private:
     int x;
@@ -69,10 +85,11 @@ private:
 class ViewSpot: public Spot
 {
 public:
-    ViewSpot(int x ,int y,string name):Spot(x,y)    {SetName(name);}
+    ViewSpot(int x ,int y,string name,string loc):Spot(x,y)    {SetName(name);SetLoc(loc);}
     ~ViewSpot();
     void SetInfo(string infomation)    {Info = infomation;}
     void SetTag();
+    void SetLoc(string l) {Location = l;}
     void SetName(string n)  {Name = n;}
     void ChangeTag(string comment);
     void AddComment(string comment);
@@ -80,11 +97,17 @@ public:
     void ShowInfo();
     string ReturnName() {return Name;}
     string ReturnInfo() {return Info;}
+    void ShowComments_NF();
+    void ShowComments_OF();
+    string ReturnLoc()  {return Location;}
+    int Return_CommentList_Len();
+    vector<int> ReturnTag();
 private:
     string Name;
     string Info;
     vector<int> Tag;
     LinkList CommentList;
+    string Location;
 };
 
 class RoadSpot:public Spot
@@ -105,18 +128,30 @@ private:
     string RN;
 };
 
+class Cal_Route;
+
 class SpotMatrix
 {
 public:
-    SpotMatrix();    //busspot”Îviewspot∑÷¡Ω∏ˆŒƒº˛∂¡»Î◊¯±Í£¨√˚◊÷”Îprivate–≈œ¢
+    SpotMatrix();
     ~SpotMatrix();
     void ShowRoute();
     vector<string> FindStation(string,string);
     vector<string> ReturnStationNum(string,string);
+    void Find_ViewSpot_Comment(string,string);
+    void Find_ViewSpot_ShowComments(string,bool);
+    string Return_ViewSpotName(string);
+    string Return_ViewSpotInfo(string);
+    string Return_ViewSpotLoc(string);
+    friend class Cal_Route;
+    friend class stringmatch;
+    friend class RecommandSystem;
+    bool MatchViewSpotName(string);
 private:
     vector<vector<Spot*> > M;
     vector<string> BusStationsList;
     vector<string> ViewSpotsList;
+    vector<vector<int> > ViewSpotLoc;
 };
 
 struct Route_Cost
@@ -141,8 +176,9 @@ public:
     void Floyd_CalM();
     void Floyd_Find(string,string,int);
     void Show_Result();
-    
+    void CopyBusStationList(SpotMatrix&);
 private:
+    vector<string> BusStationsListCopy;
     vector<int> Bus_Price;
     vector<string> Bus_Num;
     vector<string>  station_name;
@@ -154,14 +190,34 @@ private:
     Route_Bus ** M_Pass_M;
 };
 
+class RecommandSystem
+{
+public:
+    RecommandSystem();
+    ~RecommandSystem();
+    void Cal_Re_Matrix(SpotMatrix&);
+    vector<string> Return_Recommand_Result(SpotMatrix&);
+private:
+    vector<vector<int> > Similarity_M;
+};
+
 class ViewSystem
 {
 public:
     ViewSystem();
     ~ViewSystem();
-    friend void Search(string);
-    
+    void MainInterface();
+    void FindViewSpotInterface();
+    void FindRouteInterface();
+    void RecommandInterface();
+    //void LookTags();
+    void CommentInterface();
+    void CommentViewSpot(string);
+    void ShowViewSpot_Comments(string);
 private:
     SpotMatrix Map;
     Cal_Route CR;
-}
+    RecommandSystem RS;
+    stringmatch Func_Match;
+};
+
