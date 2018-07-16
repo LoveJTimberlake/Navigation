@@ -257,8 +257,8 @@ SpotMatrix::SpotMatrix()
 {
     M.resize(100);
     for(int i = 0; i < 100; i ++)   M[i].resize(100);
-    ViewSpotLoc.resize(40);
-    for(int i = 0; i < 40; i++) ViewSpotLoc[i].resize(2);
+    ViewSpotLoc.resize(100);
+    for(int i = 0; i < 100; i++) ViewSpotLoc[i].resize(2);
     string bsfile = "/Users/justintimberlake/Desktop/BusStation.txt";
     ifstream fin(bsfile.c_str());
     string bsName;
@@ -276,6 +276,7 @@ SpotMatrix::SpotMatrix()
     while(fin2>>vsName>>Info>>x>>y>>loc)
     {
         M[x][y] = new ViewSpot(x,y,vsName,loc);
+        cout<<vsName<<endl;
         M[x][y]->SetInfo(Info);
         M[x][y]->SetLoc(loc);
         ViewSpotsList.push_back(vsName);
@@ -309,13 +310,14 @@ vector<string> SpotMatrix::FindStation(string s,string e)
         {
             x1 = ViewSpotLoc[i][0];
             y1 = ViewSpotLoc[i][1];
-            cout<<"F1"<<endl;   //to del
+            cout<<"F1:"<<x1<<" "<<y1<<endl;   //to del
+            
         }
         if(ViewSpotsList[i] == e)
         {
             x2 = ViewSpotLoc[i][0];
             y2 = ViewSpotLoc[i][1];
-            cout<<"F2"<<endl;   //to del
+            cout<<"F2:"<<x2<<" "<<y2<<endl;   //to del
         }
     }
     string StartBusStation, EndBusStation;
@@ -329,16 +331,19 @@ vector<string> SpotMatrix::FindStation(string s,string e)
                 if(f->ReturnName() != "Road")
                 {
                     StartBusStation = f->ReturnName();
-                    cout<<"Find3"<<endl;    //to del
+                    cout<<f->ReturnName()<<endl;
+                    cout<<"Find3:"<<x1+u<<" "<<y1+p<<endl;    //to del
                 }
             }
             BusStationSpot * e = dynamic_cast<BusStationSpot*>(M[x2+u][y2+p]);
+            cout<<x2+u<<" "<<y2+p<<endl;
             if(e)
             {
                 if(e->ReturnName() != "Road")
                 {
                     EndBusStation = e->ReturnName();
-                    cout<<"Find4"<<endl;    //to del
+                    cout<<e->ReturnName()<<endl;
+                    cout<<"Find4:"<<x2+u<<" "<<y2+p<<endl;    //to del
                 }
             }
         }
@@ -561,6 +566,7 @@ void Cal_Route::Floyd_CalM()
             }
         }
     }
+    cout<<"Cal M done"<<endl;
 }
 
 void Cal_Route::CopyBusStationList(SpotMatrix & S)
@@ -582,12 +588,8 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
     }
     //先找到站名s,e分别代表着哪两个站
     string S_ID, E_ID;
-    for(int i = 0; i < 30; i++)
-    {
-        if(station_name[i] == s)    S_ID = to_string(int(i));
-        else if(station_name[i] == e)    E_ID = to_string(int(i));
-        else continue;
-    }
+    S_ID = s;
+    E_ID = e;
     //找出时间最短的路线
     if(!standard){
         string temp = Pass_M[stoi(S_ID)][stoi(E_ID)].end;
@@ -600,6 +602,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
             else    temp = Pass_M[stoi(temp)][stoi(E_ID)].end;
         }
         route.push_back(E_ID);
+        cout<<"Route Found"<<endl;
         queue<string> bus_route;    //用于保存前前站到前一站所能选择的车辆（当可一直坐下来时则只有一辆，当有多辆在上一站转乘之后的则需要比较）
     int temp_s = 0;
     int temp_e = 0; //两者均在发现前前站到前一站与前一站到该站的车无重合时分别赋值为h-1与h
@@ -653,7 +656,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
                 {
                     cout<<BusStationsListCopy[stoi(route[temp_s])]<<"->"<<BusStationsListCopy[stoi(route.back())]<<":"<<bus_route.front()<<"号车"<<endl;
                     time += Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].road;
-                    return;
+                    break;
                 }
             }
             else
@@ -753,7 +756,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
                     if(h == route.size()-2)
                     {
                         cout<<BusStationsListCopy[stoi(route[temp_s])]<<"->"<<BusStationsListCopy[stoi(route.back())]<<":"<<bus_route.front()<<"号车"<<endl;
-                        money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price;
+                        money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price/(route.size() - 1 - temp_s);
                         break;
                     }
                 }
@@ -762,7 +765,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
                     bus_route.push(last_buses[0]);
                     cout<<BusStationsListCopy[stoi(route[temp_s])]<<"->"<<BusStationsListCopy[stoi(route[temp_e])]<<":"<<bus_route.front()<<"号车"<<endl;
                     cout<<money<<endl;
-                    money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price/(temp_e - temp_s);
+                    money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price/(temp_e - temp_s); //
                     cout<<money<<endl;
                     temp_s = h;
                     temp_e = h+1;
@@ -778,7 +781,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
                     if(h == route.size() - 2) //倒数第二个站到终点站的路线未画出
                     {
                         cout<<money<<endl;
-                        money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price;
+                        money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price/(route.size() - 1 - temp_s);   //
                         cout<<BusStationsListCopy[stoi(route[route.size() - 2])]<<"->"<<BusStationsListCopy[stoi(route[route.size()-1])]<<":"<<bus_route.front()<<"号车"<<endl;
                         cout<<money<<endl;
                     }
