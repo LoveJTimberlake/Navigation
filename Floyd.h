@@ -54,9 +54,11 @@ public:
     virtual void ChangeTag(string comment)  {}
     virtual void AddComment(string comment) {}
     virtual void DeleteComment(int) {}
+    virtual void Set_Score(int) {}
     virtual void ShowInfo() {}
     virtual void SetLoc(string)   {}
     virtual string ReturnInfo() {return Ori_name;}
+    virtual void InitComment() {};
 private:
     int x;
     int y;
@@ -94,7 +96,9 @@ public:
     void ChangeTag(string comment);
     void AddComment(string comment);
     void DeleteComment(int);
+    void Set_Score(int);
     void ShowInfo();
+    void InitComment();
     string ReturnName() {return Name;}
     string ReturnInfo() {return Info;}
     void ShowComments_NF();
@@ -108,6 +112,7 @@ private:
     vector<int> Tag;
     LinkList CommentList;
     string Location;
+    int score;
 };
 
 class RoadSpot:public Spot
@@ -139,6 +144,7 @@ public:
     vector<string> FindStation(string,string);
     vector<string> ReturnStationNum(string,string);
     void Find_ViewSpot_Comment(string,string);
+    void Find_ViewSpot_Score(string, int);
     void Find_ViewSpot_ShowComments(string,bool);
     string Return_ViewSpotName(string);
     string Return_ViewSpotInfo(string);
@@ -147,6 +153,8 @@ public:
     friend class stringmatch;
     friend class RecommandSystem;
     bool MatchViewSpotName(string);
+    void Show_Route_Pic(string,string);
+    string Return_ViewSpotName(int);
 private:
     vector<vector<Spot*> > M;
     vector<string> BusStationsList;
@@ -199,6 +207,8 @@ public:
     vector<string> Return_Recommand_Result(SpotMatrix&);
 private:
     vector<vector<int> > Similarity_M;
+    vector<double> User_Vector;
+    vector<int> User_Score;
 };
 
 class ViewSystem
@@ -214,6 +224,7 @@ public:
     void CommentInterface();
     void CommentViewSpot(string);
     void ShowViewSpot_Comments(string);
+    void ScoreViewSpot(string);
 private:
     SpotMatrix Map;
     Cal_Route CR;

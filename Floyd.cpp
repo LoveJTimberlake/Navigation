@@ -180,11 +180,12 @@ ViewSpot::~ViewSpot()
 void ViewSpot::SetTag()
 {
     char filename[256];
-    sprintf(filename,"/User/justintimberlake/Desktop/Navigation/ViewSpotTag/%s.txt",Name.c_str());
+    sprintf(filename,"/Users/justintimberlake/Desktop/Navigation/ViewSpotTag/%s.txt",Name.c_str());
     ifstream fin(filename);
     int weight;
-    while(fin>>weight)
+    for(int i = 0; i < 7;i++)
     {
+        fin>>weight;
         Tag.push_back(weight);
     }
 }
@@ -194,14 +195,34 @@ void ViewSpot::ChangeTag(string comment)    //对评论调用python包抽取关�
     
 }
 
+void ViewSpot::InitComment()
+{
+    char filename[256];
+    sprintf(filename,"/Users/justintimberlake/Desktop/Navigation/ViewSpotTag/%s.txt",Name.c_str());
+    ifstream fin(filename);
+    int k;
+    for(int i = 0; i < 7;i++)   fin>>k;
+    string comment;
+    while(fin>>comment)
+    {
+        CommentList.Insert(comment);
+    }
+}
+
 void ViewSpot::AddComment(string comment)
 {
     CommentList.Insert(comment);
+    
 }
 
 void ViewSpot::DeleteComment(int loc)
 {
     CommentList.Delete(loc);
+}
+
+void ViewSpot::Set_Score(int s)
+{
+    score = s;
 }
 
 void ViewSpot::ShowInfo()
@@ -272,11 +293,18 @@ SpotMatrix::SpotMatrix()
     fin.close();
     string vsfile = "/Users/justintimberlake/Desktop/ViewSpot.txt";
     ifstream fin2(vsfile.c_str());
+    string scorefile = "/Users/justintimberlake/Desktop/Score.txt";
+    ifstream fins(scorefile.c_str());
+    if(fins) cout<<"Score txt open"<<endl;
+    int s;
     string vsName,Info,loc;
-    while(fin2>>vsName>>Info>>x>>y>>loc)
+    while(fin2>>vsName>>Info>>x>>y>>loc && fins>>s)
     {
         M[x][y] = new ViewSpot(x,y,vsName,loc);
-        cout<<vsName<<endl;
+        M[x][y]->InitComment();
+        M[x][y]->SetTag();
+        M[x][y]->Set_Score(s);
+        cout<<vsName<<"  "<<s<<endl;    //to del
         M[x][y]->SetInfo(Info);
         M[x][y]->SetLoc(loc);
         ViewSpotsList.push_back(vsName);
@@ -285,6 +313,7 @@ SpotMatrix::SpotMatrix()
         j++;
     }
     fin2.close();
+    fins.close();
     string rsfile = "/Users/justintimberlake/Desktop/RoadSpot.txt";
     ifstream filein(rsfile.c_str());
     while(filein>>x>>y)
@@ -374,7 +403,7 @@ void SpotMatrix::Find_ViewSpot_Comment(string name,string comment)
     {
         if(ViewSpotsList[i] == name)
         {
-            cout<<M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]->ReturnName()<<endl;
+            cout<<M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]->ReturnName()<<endl;  //to del
             ViewSpot * s = dynamic_cast<ViewSpot*>(M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]);
             if(!s)  cout<<"fail"<<endl;     //to change suggestion
             else
@@ -384,6 +413,51 @@ void SpotMatrix::Find_ViewSpot_Comment(string name,string comment)
             }
         }
     }
+    //将该评论写入其对应的文件中
+    char filename[256];
+    sprintf(filename,"/Users/justintimberlake/Desktop/Navigation/ViewSpotTag/%s.txt",name.c_str());
+    cout<<filename<<endl;
+    ofstream wf(filename,ios::app);
+    if(!wf) cout<<"Can't open the file!"<<endl;
+    else
+    {
+        wf<<endl;
+        wf<<comment<<endl;
+    }
+    wf.close();
+}
+
+void SpotMatrix::Find_ViewSpot_Score(string name,int score)
+{
+    int i;
+    for(i  = 0 ; i < ViewSpotsList.size();i++)
+    {
+        if(ViewSpotsList[i] == name)
+        {
+            ViewSpot * s = dynamic_cast<ViewSpot*>(M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]);
+            if(!s) cout<<"fail"<<endl;
+            else
+            {
+                s->Set_Score(score);
+                cout<<"Set succ"<<endl;
+                break;
+            }
+        }
+    }
+    //将分数写入文件中
+    vector<int> temp;
+    string sf_name = "/Users/justintimberlake/Desktop/Score.txt";
+    ifstream fins(sf_name.c_str());
+    int t;
+    while(fins>>t) temp.push_back(t);
+    temp[i] = score;
+    cout<<name<<endl;
+    fins.close();
+    ofstream fins_w(sf_name.c_str());
+    //for(int x = 0; x < 25;x++)  cout<<ViewSpotsList[x]<<" ";    //to del
+    cout<<endl;
+    for(int f = 0;f < ViewSpotsList.size();f++)   fins_w<<temp[f]<<" ";
+    fins_w.close();
 }
 
 void SpotMatrix::Find_ViewSpot_ShowComments(string name, bool reverse)
@@ -419,6 +493,11 @@ bool SpotMatrix::MatchViewSpotName(string s)
 string SpotMatrix::Return_ViewSpotName(string name)
 {
     return name;
+}
+
+string SpotMatrix::Return_ViewSpotName(int index)
+{
+    return ViewSpotsList[index];
 }
 
 string SpotMatrix::Return_ViewSpotInfo(string name)
@@ -577,7 +656,7 @@ void Cal_Route::CopyBusStationList(SpotMatrix & S)
     }
 }
 
-void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代表着站名,standard = 1 Money        = 0 Road
+void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代表着车站序号,standard = 1 Money        = 0 Road
 {
     int time = 0;
     int money = 0;
@@ -602,7 +681,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
             else    temp = Pass_M[stoi(temp)][stoi(E_ID)].end;
         }
         route.push_back(E_ID);
-        cout<<"Route Found"<<endl;
+        cout<<"Route Found"<<endl;      //to del
         queue<string> bus_route;    //用于保存前前站到前一站所能选择的车辆（当可一直坐下来时则只有一辆，当有多辆在上一站转乘之后的则需要比较）
     int temp_s = 0;
     int temp_e = 0; //两者均在发现前前站到前一站与前一站到该站的车无重合时分别赋值为h-1与h
@@ -684,6 +763,8 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
         }
     }
         cout<<"Time Cost:"<<time<<endl;
+        //显示路线功能
+        
     }
     else
     {
@@ -868,11 +949,13 @@ void ViewSystem::MainInterface()
     cout<<"1.SearchViewSpot"<<endl;
     cout<<"2.SearchRoutetoViewSpot"<<endl;
     cout<<"3.CommentViewSpot"<<endl;
+    cout<<"4.ViewSpotRecommand"<<endl;
     string n;
     cin>>n;
     if(n == "3")  return CommentInterface();
     else if(n == "1")   return FindViewSpotInterface();
     else if(n == "2")   return FindRouteInterface();
+    else if(n == "4")   return RecommandInterface();
     else if(n == "quit")    return;//自动关闭整个程序
 }
 
@@ -912,7 +995,7 @@ void ViewSystem::CommentInterface()
     while(1)
     {
         string op;
-        cout<<"1.看自己的景点评价"<<"        "<<"2.给景点添加评价"<<endl;
+        cout<<"1.看自己的景点评价"<<"        "<<"2.给景点添加Tips"<<"        "<<"3.给景点评上自己的分数"<<endl;
         cout<<"您的选择：(quit可退出该界面)";
         cin>>op;
         if(op == "2")
@@ -961,6 +1044,31 @@ void ViewSystem::CommentInterface()
                 }
             }
         }
+        else if(op == "3")
+        {
+            cout<<"您想为哪个景点进行评分？"<<endl;
+            cout<<"Tips：用Enter可提示当前输入字符匹配的所有景点(quit可退出该界面)"<<endl;
+            cout<<"输入名字:"<<endl;
+            string ViewSpotName;
+            while(cin>>ViewSpotName)
+            {
+                if(ViewSpotName == "quit") break;
+                else
+                {
+                    bool flag3 = Map.MatchViewSpotName(ViewSpotName);
+                    if(flag3)
+                    {
+                        ScoreViewSpot(ViewSpotName);
+                        cout<<"请输入景点名字"<<endl;
+                    }
+                    else
+                    {
+                        Func_Match.FindMatchedString(ViewSpotName,Map);
+                        Func_Match.ShowResult();
+                    }
+                }
+            }
+        }
         else if(op == "quit")
         {
             return MainInterface();
@@ -980,6 +1088,14 @@ void ViewSystem::CommentViewSpot(string ViewSpotName)
     string comment;
     cin>>comment;
     Map.Find_ViewSpot_Comment(ViewSpotName,comment);
+}
+
+void ViewSystem::ScoreViewSpot(string ViewSpotName)
+{
+    cout<<"请给出您关于该景点的分数吧："<<endl;
+    int S;
+    cin>>S;
+    Map.Find_ViewSpot_Score(ViewSpotName,S);
 }
 
 void ViewSystem::ShowViewSpot_Comments(string ViewSpotName)
@@ -1070,7 +1186,7 @@ void ViewSystem::RecommandInterface()
     cout<<"推荐结果如下："<<endl;
     for(int i = 0; i < Recommand_ViewSpots.size() ;i++)
     {
-        cout<<i<<": "<<Recommand_ViewSpots[i]<<endl;
+        cout<<i+1<<": "<<Recommand_ViewSpots[i]<<endl;
     }
     cout<<"可输入感兴趣的景点的编号以查看详情。（输入quit可退出该界面）"<<endl;
     string op;
@@ -1093,6 +1209,15 @@ void ViewSystem::RecommandInterface()
 RecommandSystem::RecommandSystem()
 {
     
+    string uv = "/Users/justintimberlake/Desktop/Score.txt";
+    ifstream uvfile(uv.c_str());
+    int s;
+    while(uvfile>>s)
+    {
+        User_Score.push_back(s);
+    }
+    uvfile.close();
+    for(int i = 0; i < 7; i++)  User_Vector.push_back(0);
 }
 
 RecommandSystem::~RecommandSystem()
@@ -1102,12 +1227,42 @@ RecommandSystem::~RecommandSystem()
 
 void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
 {
+    //生成用户偏好向量
+    bool flag = false;
+    for(int i = 0; i < User_Score.size();i++)
+    {
+        if(User_Score[i])
+        {
+            flag = true;
+            int x = S.ViewSpotLoc[i][0];
+            int y = S.ViewSpotLoc[i][1];
+            vector<int> t;
+            ViewSpot * z = dynamic_cast<ViewSpot*>(S.M[x][y]);
+            if(z) cout<<"Find spot in Recommand"<<endl;
+            t = z->ReturnTag();
+            int s = User_Score[i];
+            for(int j = 0; j < t.size();j++)    User_Vector[j] += double(s)/5 * double(t[j]);
+        }
+    }
+    cout<<"User Vector: ";
+    for(int i = 0; i < 7; i++)  cout<<User_Vector[i]<<" ";
+    cout<<endl;
+    if(!flag)
+    {
+        cout<<"No Recommand now because you haven't been any ViewSpot"<<endl;
+        return ;
+    }
+    cout<<endl;
+    //计算景点间相似度
+    Similarity_M.resize(S.ViewSpotsList.size());
+    for(int i = 0; i < S.ViewSpotsList.size();i++)  Similarity_M[i].resize(S.ViewSpotsList.size());
     for(int i = 0; i < S.ViewSpotsList.size(); i++)
     {
         int x = S.ViewSpotLoc[i][0];
-        int y = S.ViewSpotLoc[i][0];
+        int y = S.ViewSpotLoc[i][1];
+        cout<<x<<" "<<y<<endl;  //to del
         ViewSpot * P = dynamic_cast<ViewSpot*> (S.M[x][y]);
-        //if(P)   cout<<"Find out"<<endl;
+        //if(P)   cout<<"Find P"<<endl;       //to del
         vector<int> Cur_Arr = P->ReturnTag();
         Similarity_M[i][i] = 1;
         for(int j = 0; j < S.ViewSpotsList.size(); j++)
@@ -1117,8 +1272,11 @@ void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
             {
                 int temp_x = S.ViewSpotLoc[j][0];
                 int temp_y = S.ViewSpotLoc[j][1];
+                //cout<<temp_x<<" "<<temp_y<<endl;    //to del
                 ViewSpot * Q = dynamic_cast<ViewSpot*> (S.M[temp_x][temp_y]);
-                //if(Q) cout<<"Find Again Q"<<j<<endl;
+                
+                //if(Q) cout<<"Find Again Q"<<j<<endl;    //to del
+                
                 vector<int> Temp_Arr = Q->ReturnTag();
                 int Module_Curr = 0;
                 int Module_Temp = 0;
@@ -1129,8 +1287,13 @@ void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
                     Module_Temp += Temp_Arr[t] * Temp_Arr[t];
                     Up_Factor += Cur_Arr[t] * Temp_Arr[t];
                 }
+                Module_Curr = sqrt(Module_Curr);
+                Module_Temp = sqrt(Module_Temp);
+                //cout<<"Module"<<" "<<i<<" "<<Module_Curr<<" "<<Module_Temp<<endl;   //to del
                 int Similarity_Result = Up_Factor/sqrt(Module_Temp * Module_Curr);      //sqrt 需声明模块
+                //cout<<"Result:"<<Similarity_Result<<endl;   //to del
                 Similarity_M[i][j] = Similarity_Result;
+                cout<<Similarity_M[i][j]<<endl;
             }
         }
     }
@@ -1139,37 +1302,45 @@ void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
 vector<string> RecommandSystem::Return_Recommand_Result(SpotMatrix & S)
 {
     vector<string> Result;
-    vector<string> HaveBeen_ViewSpot;
-    for(int i = 0; i < S.ViewSpotsList.size(); i++)
+    //先挑出用户评分>=4分的景点 并选出与其相似度高的两个景点放入推荐列表1
+    
+    
+    //选出与用户偏好向量相似度高的3个景点加入Result
+    vector<double> User_VS_Sim_Vector;
+    for(int i = 0; i < S.ViewSpotsList.size();i++)
     {
         int x = S.ViewSpotLoc[i][0];
         int y = S.ViewSpotLoc[i][1];
-        ViewSpot * VS = dynamic_cast<ViewSpot*> (S.M[x][y]);
-        if(VS->Return_CommentList_Len())
+        ViewSpot * p = dynamic_cast<ViewSpot*> (S.M[x][y]);
+        vector<int> temp = p->ReturnTag();
+        double Module_U,Module_VS,e;
+        e = 0;
+        Module_U = 0;
+        Module_VS = 0;
+        for(int j = 0; j < temp.size();j++)
         {
-            HaveBeen_ViewSpot.push_back(S.ViewSpotsList[i]);
+            Module_U += User_Vector[j] * User_Vector[j];
+            Module_VS += temp[j] * temp[j];
+            e += User_Vector[j] * temp[j];
         }
+        User_VS_Sim_Vector.push_back(e/sqrt(sqrt(Module_VS)*sqrt(Module_U)));
     }
-    for(int i = 0; i < HaveBeen_ViewSpot.size(); i++)
+    //排序 将最高的三个加入该部分的推荐结果中
+    int max1,max2,max3;
+    for(int i = 0; i < 3;i++)
     {
-        for(int j = 0; j < S.ViewSpotsList.size(); j++)
+        int max = 0;
+        for(int v = 1; v < User_VS_Sim_Vector.size();v++)
         {
-            if(HaveBeen_ViewSpot[i] == S.ViewSpotsList[j])   //Similarity_M的第j行是该景点与其他景点的相似度
-            {
-                int Max = 0;
-                int index;
-                for(int t = 0; t < S.ViewSpotsList.size(); t++)
-                {
-                    if(Similarity_M[j][t] > Max)
-                    {
-                        index = t;
-                        Max = Similarity_M[j][t];
-                    }
-                }
-                Result.push_back(S.ViewSpotsList[index]);
-            }
+            if(User_VS_Sim_Vector[v] > User_VS_Sim_Vector[max]) max = v;
         }
+        if(i == 0) max1 = max;
+        else if(i == 1) max2 = max;
+        else max3 = max;
+        User_VS_Sim_Vector[max] = 0;
+        Result.push_back(S.Return_ViewSpotName(max));
     }
+    
     return Result;
 }
 
