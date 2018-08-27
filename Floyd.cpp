@@ -6,6 +6,7 @@
 #include<fstream>
 #include<queue>
 #include<cmath>
+#include<unistd.h>
 using namespace std;
 
 
@@ -304,7 +305,7 @@ SpotMatrix::SpotMatrix()
         M[x][y]->InitComment();
         M[x][y]->SetTag();
         M[x][y]->Set_Score(s);
-        cout<<vsName<<"  "<<s<<endl;    //to del
+        //cout<<vsName<<"  "<<s<<endl;    //to del
         M[x][y]->SetInfo(Info);
         M[x][y]->SetLoc(loc);
         ViewSpotsList.push_back(vsName);
@@ -339,14 +340,14 @@ vector<string> SpotMatrix::FindStation(string s,string e)
         {
             x1 = ViewSpotLoc[i][0];
             y1 = ViewSpotLoc[i][1];
-            cout<<"F1:"<<x1<<" "<<y1<<endl;   //to del
+            //cout<<"F1:"<<x1<<" "<<y1<<endl;   //to del
             
         }
         if(ViewSpotsList[i] == e)
         {
             x2 = ViewSpotLoc[i][0];
             y2 = ViewSpotLoc[i][1];
-            cout<<"F2:"<<x2<<" "<<y2<<endl;   //to del
+            //cout<<"F2:"<<x2<<" "<<y2<<endl;   //to del
         }
     }
     string StartBusStation, EndBusStation;
@@ -360,19 +361,19 @@ vector<string> SpotMatrix::FindStation(string s,string e)
                 if(f->ReturnName() != "Road")
                 {
                     StartBusStation = f->ReturnName();
-                    cout<<f->ReturnName()<<endl;
-                    cout<<"Find3:"<<x1+u<<" "<<y1+p<<endl;    //to del
+                    //cout<<f->ReturnName()<<endl;
+                    //cout<<"Find3:"<<x1+u<<" "<<y1+p<<endl;    //to del
                 }
             }
             BusStationSpot * e = dynamic_cast<BusStationSpot*>(M[x2+u][y2+p]);
-            cout<<x2+u<<" "<<y2+p<<endl;
+            //cout<<x2+u<<" "<<y2+p<<endl;
             if(e)
             {
                 if(e->ReturnName() != "Road")
                 {
                     EndBusStation = e->ReturnName();
-                    cout<<e->ReturnName()<<endl;
-                    cout<<"Find4:"<<x2+u<<" "<<y2+p<<endl;    //to del
+                    //cout<<e->ReturnName()<<endl;
+                    //cout<<"Find4:"<<x2+u<<" "<<y2+p<<endl;    //to del
                 }
             }
         }
@@ -403,20 +404,20 @@ void SpotMatrix::Find_ViewSpot_Comment(string name,string comment)
     {
         if(ViewSpotsList[i] == name)
         {
-            cout<<M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]->ReturnName()<<endl;  //to del
+            //cout<<M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]->ReturnName()<<endl;  //to del
             ViewSpot * s = dynamic_cast<ViewSpot*>(M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]);
-            if(!s)  cout<<"fail"<<endl;     //to change suggestion
+            if(!s)  cout<<"Fail to find"<<endl;     //to change suggestion
             else
             {
                 s->AddComment(comment);
-                cout<<"Add succ"<<endl;     //to change suggestion
+                //cout<<"Add succ"<<endl;     //to change suggestion
             }
         }
     }
     //将该评论写入其对应的文件中
     char filename[256];
     sprintf(filename,"/Users/justintimberlake/Desktop/Navigation/ViewSpotTag/%s.txt",name.c_str());
-    cout<<filename<<endl;
+    //cout<<filename<<endl;
     ofstream wf(filename,ios::app);
     if(!wf) cout<<"Can't open the file!"<<endl;
     else
@@ -435,11 +436,11 @@ void SpotMatrix::Find_ViewSpot_Score(string name,int score)
         if(ViewSpotsList[i] == name)
         {
             ViewSpot * s = dynamic_cast<ViewSpot*>(M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]);
-            if(!s) cout<<"fail"<<endl;
+            if(!s) cout<<"Fail to score"<<endl;
             else
             {
                 s->Set_Score(score);
-                cout<<"Set succ"<<endl;
+                //cout<<"Set succ"<<endl;
                 break;
             }
         }
@@ -451,7 +452,7 @@ void SpotMatrix::Find_ViewSpot_Score(string name,int score)
     int t;
     while(fins>>t) temp.push_back(t);
     temp[i] = score;
-    cout<<name<<endl;
+    //cout<<name<<endl;
     fins.close();
     ofstream fins_w(sf_name.c_str());
     //for(int x = 0; x < 25;x++)  cout<<ViewSpotsList[x]<<" ";    //to del
@@ -466,7 +467,7 @@ void SpotMatrix::Find_ViewSpot_ShowComments(string name, bool reverse)
     {
         if(ViewSpotsList[i] == name)
         {
-            cout<<"found"<<endl;
+            //cout<<"found"<<endl;
             if(!reverse)
             {
                 ViewSpot * s = dynamic_cast<ViewSpot*>(M[ViewSpotLoc[i][0]][ViewSpotLoc[i][1]]);
@@ -645,7 +646,7 @@ void Cal_Route::Floyd_CalM()
             }
         }
     }
-    cout<<"Cal M done"<<endl;
+    //cout<<"Cal M done"<<endl;
 }
 
 void Cal_Route::CopyBusStationList(SpotMatrix & S)
@@ -662,9 +663,10 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
     int money = 0;
     if(s==e)
     {
-        cout<<"你就在目的地呀，路痴～"<<endl;
+        cout<<"你就在目的地呀，路痴!"<<endl;
         return;
     }
+    cout<<endl;
     //先找到站名s,e分别代表着哪两个站
     string S_ID, E_ID;
     S_ID = s;
@@ -681,7 +683,7 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
             else    temp = Pass_M[stoi(temp)][stoi(E_ID)].end;
         }
         route.push_back(E_ID);
-        cout<<"Route Found"<<endl;      //to del
+        //cout<<"Route Found"<<endl;      //to del
         queue<string> bus_route;    //用于保存前前站到前一站所能选择的车辆（当可一直坐下来时则只有一辆，当有多辆在上一站转乘之后的则需要比较）
     int temp_s = 0;
     int temp_e = 0; //两者均在发现前前站到前一站与前一站到该站的车无重合时分别赋值为h-1与h
@@ -762,7 +764,15 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
             }
         }
     }
-        cout<<"Time Cost:"<<time<<endl;
+        int hour, min;
+        hour = 0;
+        if(time / 60)
+        {
+            hour = time / 60;
+            min = time - hour * 60;
+        }
+        if(hour)    cout<<endl<<"Time Cost: "<<hour<<"h "<<min<<"mins"<<endl;
+        else cout<<endl<<"Time Cost:"<<time<<" mins"<<endl;
         //显示路线功能
         
     }
@@ -845,9 +855,9 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
                 {
                     bus_route.push(last_buses[0]);
                     cout<<BusStationsListCopy[stoi(route[temp_s])]<<"->"<<BusStationsListCopy[stoi(route[temp_e])]<<":"<<bus_route.front()<<"号车"<<endl;
-                    cout<<money<<endl;
+                    //cout<<money<<endl;
                     money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price/(temp_e - temp_s); //
-                    cout<<money<<endl;
+                    //cout<<money<<endl;
                     temp_s = h;
                     temp_e = h+1;
                     while(!bus_route.empty())   bus_route.pop();
@@ -861,15 +871,15 @@ void Cal_Route::Floyd_Find(string s, string e,int standard)      //s与e是代�
                     delete next_buses;
                     if(h == route.size() - 2) //倒数第二个站到终点站的路线未画出
                     {
-                        cout<<money<<endl;
+                        //cout<<money<<endl;
                         money += M_Adj_M[stoi(route[temp_s])][stoi(route[temp_e])].price/(route.size() - 1 - temp_s);   //
                         cout<<BusStationsListCopy[stoi(route[route.size() - 2])]<<"->"<<BusStationsListCopy[stoi(route[route.size()-1])]<<":"<<bus_route.front()<<"号车"<<endl;
-                        cout<<money<<endl;
+                        //cout<<money<<endl;
                     }
                 }
             }
         }
-        cout<<"Money Needed:"<<money<<endl;
+        cout<<endl<<"Money Needed:"<<money<<"元"<<endl;
     }
     //后期可以考虑加入ShowRoute功能
 }
@@ -911,6 +921,7 @@ void stringmatch::ShowResult()
     {
         cout<<"不存在该景点!"<<endl;
     }
+    cout<<endl;
     for(int i = 0; i < result.size(); i++)    cout<<i+1<<":"<<result[i]<<endl;
     cout<<endl;
     cout<<"请重新输入"<<endl;
@@ -928,6 +939,7 @@ ViewSystem::~ViewSystem()
 
 void ViewSystem::MainInterface()
 {
+    system("clear");
     for(int i = 0 ; i < 50;i++) cout<<"*";
     cout<<endl;
     for(int i = 1; i < 10; i++)
@@ -961,9 +973,9 @@ void ViewSystem::MainInterface()
 
 void ViewSystem::FindViewSpotInterface()
 {
-    cout<<endl<<endl;
+    system("clear");
     cout<<"您要查询的景点名字是？"<<endl;
-    cout<<"按下Enter可对当前输入字符进行自动匹配(quit可退出当前界面)"<<endl;
+    cout<<"按下Enter可对当前输入字符进行自动匹配    (quit可退出当前界面)"<<endl;
     string ViewSpotName;
     while(cin>>ViewSpotName)
     {
@@ -971,14 +983,15 @@ void ViewSystem::FindViewSpotInterface()
         else
         {
             bool exist_flag = Map.MatchViewSpotName(ViewSpotName);
-            cout<<exist_flag<<endl;
+            //cout<<exist_flag<<endl;
             if(exist_flag)
             {
+                system("clear");
                 cout<<"景点名："<<Map.Return_ViewSpotName(ViewSpotName)<<endl;
                 cout<<"景点位置:"<<Map.Return_ViewSpotLoc(ViewSpotName)<<endl;
                 cout<<"景点介绍:"<<Map.Return_ViewSpotInfo(ViewSpotName)<<endl;
                 cout<<endl;
-                ShowViewSpot_Comments(ViewSpotName);
+                return ShowViewSpot_Comments(ViewSpotName);
                 cout<<endl<<endl;
             }
             else
@@ -992,6 +1005,7 @@ void ViewSystem::FindViewSpotInterface()
 
 void ViewSystem::CommentInterface()
 {
+    system("clear");
     while(1)
     {
         string op;
@@ -1000,8 +1014,9 @@ void ViewSystem::CommentInterface()
         cin>>op;
         if(op == "2")
         {
+            system("clear");
             cout<<"您想为哪个景点添加评价？"<<endl;
-            cout<<"Tips：用Enter可提示当前输入字符匹配的所有景点(quit可退出该界面)"<<endl;
+            cout<<"Tips：用Enter可提示当前输入字符匹配的所有景点  (quit可退出该界面)"<<endl;
             cout<<"输入景点名字："<<endl;
             string ViewSpotName;
             while(cin>>ViewSpotName)
@@ -1013,7 +1028,7 @@ void ViewSystem::CommentInterface()
                     if(flag1)
                     {
                         CommentViewSpot(ViewSpotName);
-                        cout<<"请输入景点名字"<<endl;
+                        cout<<"请输入景点名字:"<<endl;
                     }
                     else
                     {
@@ -1025,6 +1040,7 @@ void ViewSystem::CommentInterface()
         }
         else if(op == "1")
         {
+            system("clear");
             cout<<"你想看哪一个景点的评价？"<<endl;
             cout<<"Tips：用Enter可提示当前输入字符匹配的所有景点(quit可退出该界面)"<<endl;
             cout<<"输入名字："<<endl;
@@ -1035,7 +1051,7 @@ void ViewSystem::CommentInterface()
                 else
                 {
                     bool flag2 = Map.MatchViewSpotName(ViewSpotName);
-                    if(flag2)   ShowViewSpot_Comments(ViewSpotName);
+                    if(flag2)   return ShowViewSpot_Comments(ViewSpotName);
                     else
                     {
                         Func_Match.FindMatchedString(ViewSpotName,Map);
@@ -1046,6 +1062,8 @@ void ViewSystem::CommentInterface()
         }
         else if(op == "3")
         {
+            system("clear");
+            cout<<endl<<endl;
             cout<<"您想为哪个景点进行评分？"<<endl;
             cout<<"Tips：用Enter可提示当前输入字符匹配的所有景点(quit可退出该界面)"<<endl;
             cout<<"输入名字:"<<endl;
@@ -1084,6 +1102,7 @@ void ViewSystem::CommentInterface()
 
 void ViewSystem::CommentViewSpot(string ViewSpotName)
 {
+    system("clear");
     cout<<"留下您关于该景点的评价吧:"<<endl;
     string comment;
     cin>>comment;
@@ -1092,6 +1111,7 @@ void ViewSystem::CommentViewSpot(string ViewSpotName)
 
 void ViewSystem::ScoreViewSpot(string ViewSpotName)
 {
+    system("clear");
     cout<<"请给出您关于该景点的分数吧："<<endl;
     int S;
     cin>>S;
@@ -1103,23 +1123,32 @@ void ViewSystem::ShowViewSpot_Comments(string ViewSpotName)
     Map.Find_ViewSpot_ShowComments(ViewSpotName,false);
     while(1)
     {
+        
         string op;
-        cout<<"记录呈现顺序:"<<"1.从旧到新"<<"\t"<<"2.从新到旧"<<endl;
-        cout<<"(输入quit退出)"<<endl;
+        cout<<endl<<endl<<"记录呈现顺序:"<<"1.从旧到新"<<"\t"<<"2.从新到旧"<<endl;
+        cout<<"(若无内容或想退出请输入quit退出)"<<endl;
         cin>>op;
+        cout<<endl<<endl;
         if(op == "1")
         {
             Map.Find_ViewSpot_ShowComments(ViewSpotName,0);
         }
         else if(op == "2")    Map.Find_ViewSpot_ShowComments(ViewSpotName,1);
         else if(op == "quit")  return MainInterface();
+        else
+        {
+            cout<<endl<<"错误指令"<<endl;
+            sleep(2);
+            system("clear");
+            continue;
+        }
     }
     
 }
 
 void ViewSystem::FindRouteInterface()
 {
-    cout<<endl;
+    system("clear");
     string start,end;
     CR.Floyd_CalM();
     CR.CopyBusStationList(Map);
@@ -1158,13 +1187,14 @@ void ViewSystem::FindRouteInterface()
     }
     vector<string> StationName = Map.FindStation(start,end);
     vector<string> StationNumber = Map.ReturnStationNum(StationName[0],StationName[1]);
-    cout<<"1.路程最短"<<"   "<<"2.金钱最少"<<"      "<<"输入quit可退出该界面"<<endl;
+    cout<<endl<<endl<<"1.路程最短"<<"   "<<"2.金钱最少"<<"      "<<"输入quit可退出该界面"<<endl;
     string op;
     while(cin>>op)
     {
+        system("clear");
         if(op == "1")
         {
-            cout<<"路线如下所示"<<endl;
+            cout<<"路线如下所示"<<endl<<endl;
             CR.Floyd_Find(StationNumber[0],StationNumber[1],0);
         }
         else if(op == "2")
@@ -1173,14 +1203,14 @@ void ViewSystem::FindRouteInterface()
             CR.Floyd_Find(StationNumber[0],StationNumber[1],1);
         }
         else if(op == "quit")   return MainInterface();
-        cout<<"请继续输入操作"<<endl;
-        cout<<"1.路程最短"<<"       "<<"2.金钱最少"<<"输入quit可退出该界面"<<endl;
+        cout<<endl<<endl<<"请继续输入操作"<<endl;
+        cout<<"1.路程最短"<<"       "<<"2.金钱最少"<<"      "<<"输入quit可退出该界面"<<endl;
     }
 }
 
 void ViewSystem::RecommandInterface()
 {
-    cout<<endl<<endl;
+    system("clear");
     RS.Cal_Re_Matrix(Map);
     vector<string> Recommand_ViewSpots = RS.Return_Recommand_Result(Map);
     cout<<"推荐结果如下："<<endl;
@@ -1238,14 +1268,14 @@ void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
             int y = S.ViewSpotLoc[i][1];
             vector<int> t;
             ViewSpot * z = dynamic_cast<ViewSpot*>(S.M[x][y]);
-            if(z) cout<<"Find spot in Recommand"<<endl;
+            //if(z) cout<<"Find spot in Recommand"<<endl;
             t = z->ReturnTag();
             int s = User_Score[i];
             for(int j = 0; j < t.size();j++)    User_Vector[j] += double(s)/5 * double(t[j]);
         }
     }
-    cout<<"User Vector: ";
-    for(int i = 0; i < 7; i++)  cout<<User_Vector[i]<<" ";
+    //cout<<"User Vector: ";
+    //for(int i = 0; i < 7; i++)  cout<<User_Vector[i]<<" ";
     cout<<endl;
     if(!flag)
     {
@@ -1260,7 +1290,7 @@ void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
     {
         int x = S.ViewSpotLoc[i][0];
         int y = S.ViewSpotLoc[i][1];
-        cout<<x<<" "<<y<<endl;  //to del
+        //cout<<x<<" "<<y<<endl;  //to del
         ViewSpot * P = dynamic_cast<ViewSpot*> (S.M[x][y]);
         //if(P)   cout<<"Find P"<<endl;       //to del
         vector<int> Cur_Arr = P->ReturnTag();
@@ -1293,7 +1323,7 @@ void RecommandSystem::Cal_Re_Matrix(SpotMatrix & S)
                 int Similarity_Result = Up_Factor/sqrt(Module_Temp * Module_Curr);      //sqrt 需声明模块
                 //cout<<"Result:"<<Similarity_Result<<endl;   //to del
                 Similarity_M[i][j] = Similarity_Result;
-                cout<<Similarity_M[i][j]<<endl;
+                //cout<<Similarity_M[i][j]<<endl;
             }
         }
     }
@@ -1350,7 +1380,6 @@ int main()
     VS.MainInterface();
     cout<<"谢谢使用！"<<endl;
 }
-
 
 
 
